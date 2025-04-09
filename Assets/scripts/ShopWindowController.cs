@@ -1,30 +1,44 @@
 using UnityEngine;
-using UnityEngine.UI; // Импортируем для работы с UI
-using TMPro; // Импортируем для работы с TextMeshPro
+using UnityEngine.UI; 
+using TMPro; 
 
 public class ShopWindowController : MonoBehaviour
 {
-    public GameObject shopPanel; // Ссылка на панель магазина
-    public ShopController shopController; // Ссылка на ShopController
+    public GameObject shopPanel; 
+    public ShopController shopController; 
+    public Image[] plantIcons; 
 
     private void Start()
     {
-        shopPanel.SetActive(false); // Скрываем панель при старте
+        shopPanel.SetActive(false); 
+        UpdatePlantIcons(); 
     }
 
     public void OpenShop()
     {
-        shopPanel.SetActive(true); // Показываем панель магазина
+        shopPanel.SetActive(true); 
+        UpdatePlantIcons(); 
     }
 
     public void CloseShop()
     {
-        shopPanel.SetActive(false); // Скрываем панель магазина
+        shopPanel.SetActive(false); 
+    }
+
+    private void UpdatePlantIcons()
+    {
+        for (int i = 0; i < shopController.availablePlants.Length; i++)
+        {
+            if (i < plantIcons.Length)
+            {
+                plantIcons[i].color = shopController.availablePlants[i].isUnlocked ? Color.white : Color.gray; 
+            }
+        }
     }
 
     public void BuyPlant(int plantIndex)
     {
-        shopController.BuyPlant(plantIndex); // Покупаем растение
-        CloseShop(); // Закрываем панель после покупки
+        shopController.BuyPlant(plantIndex); 
+        CloseShop(); 
     }
 }

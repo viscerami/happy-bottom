@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class CrabController : MonoBehaviour
 {
-    public ShopWindowController shopWindowController; // —сылка на ShopWindowController
+    public ShopWindowController shopWindowController; 
 
-    void OnMouseDown() // ќбработка клика на раке-отшельнике
+    void OnMouseDown() 
     {
-        shopWindowController.OpenShop(); // ќткрываем окно магазина
+        shopWindowController.OpenShop(); 
     }
 }

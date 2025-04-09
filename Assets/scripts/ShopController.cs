@@ -3,65 +3,93 @@ using TMPro;
 
 public class ShopController : MonoBehaviour
 {
-    public Plant[] availablePlants; // Доступные растения
-    public PlayerController playerController; // Ссылка на PlayerController
-    public TextMeshProUGUI shopMessage; // Сообщение в магазине
+    public Plant[] availablePlants;
+    public PlayerController playerController;
+    public TextMeshProUGUI shopMessage;
 
-    private GameObject currentPlantPrefab; // Хранит префаб для текущего растения
-    private GameObject currentPlantInstance; // Хранит текущий экземпляр растения
+    private GameObject currentPlantPrefab;
+    private GameObject currentPlantInstance;
+
+    private void Start()
+    {
+        if (availablePlants.Length > 0)
+        {
+            availablePlants[0].isUnlocked = true;
+        }
+        UpdatePlantIcons();
+    }
 
     public void BuyPlant(int plantIndex)
     {
-        if (playerController.currency >= availablePlants[plantIndex].currencyValue)
+        if (!availablePlants[plantIndex].isUnlocked)
         {
-            playerController.currency -= availablePlants[plantIndex].currencyValue; // Уменьшаем валюту
-            shopMessage.text = "Вы купили " + availablePlants[plantIndex].name + "!";
-            playerController.UpdateCurrencyUI(); // Обновляем UI валюты
+            shopMessage.text = "This plant is not yet available for purchase";
+            return;
+        }
 
-            currentPlantPrefab = availablePlants[plantIndex].gameObject; // Устанавливаем текущий префаб
-            SetupPlantToPlace(); // Настраиваем растение
+        if (playerController.currency >= availablePlants[plantIndex].purchaseCost)
+        {
+            playerController.currency -= availablePlants[plantIndex].purchaseCost;
+            shopMessage.text = "You bought a seed ";
+            playerController.UpdateCurrencyUI();
+
+            currentPlantPrefab = availablePlants[plantIndex].gameObject;
+            SetupPlantToPlace();
         }
         else
         {
-            shopMessage.text = "Недостаточно валюты!";
+            shopMessage.text = "Not enough currency";
         }
     }
 
     private void SetupPlantToPlace()
     {
-        // Создаем экземпляр префаба и активируем его
         currentPlantInstance = Instantiate(currentPlantPrefab);
-        currentPlantInstance.SetActive(true); // Обязательно активируйте
-        currentPlantInstance.transform.position = GetMousePosition(); // Позиция по курсору
+        currentPlantInstance.SetActive(true);
+        currentPlantInstance.transform.position = GetMousePosition();
     }
 
     private void Update()
     {
-        // Проверяем, нажата ли правая кнопка мыши и есть ли текущий экземпляр растения
-        if (Input.GetMouseButtonDown(1) && currentPlantInstance != null)
-        {
-            PlacePlant();
-        }
-
-        // Если есть текущий экземпляр растения, обновляем его позицию с курсором
         if (currentPlantInstance != null)
         {
-            currentPlantInstance.transform.position = GetMousePosition(); // Обновляем позицию растения с курсором
+            currentPlantInstance.transform.position = GetMousePosition();
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                PlacePlant();
+            }
         }
     }
 
     private void PlacePlant()
     {
-        // Устанавливаем растение на место
-        currentPlantInstance.AddComponent<DragAndDropPlant>(); // Добавляем скрипт для перемещения
-        currentPlantPrefab = null; // Сбрасываем текущий префаб
-        currentPlantInstance = null; // Убираем ссылку на текущий экземпляр
+        currentPlantInstance.AddComponent<DragAndDropPlant>();
+        currentPlantPrefab = null;
+        currentPlantInstance = null;
     }
 
     private Vector3 GetMousePosition()
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0; // Убедитесь, что Z = 0
+        mousePos.z = 0;
         return mousePos;
+    }
+
+    public void UnlockNextPlant(int currentIndex)
+    {
+        if (currentIndex + 1 < availablePlants.Length)
+        {
+            availablePlants[currentIndex + 1].isUnlocked = true;
+            UpdatePlantIcons();
+        }
+    }
+
+    private void UpdatePlantIcons()
+    {
+        for (int i = 0; i < availablePlants.Length; i++)
+        {
+            availablePlants[i].isUnlocked = i == 0 || availablePlants[i - 1].isUnlocked;
+        }
     }
 }
